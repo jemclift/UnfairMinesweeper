@@ -1,0 +1,132 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #c0c0c0;
+  overflow: hidden;
+}
+
+#main-content {
+  border: 3px solid #ffffff;
+  border-bottom-color: #7b7b7b;
+  border-right-color: #7b7b7b;
+  /* background-color: rgb(211, 211, 211); */
+  box-sizing: border-box;
+  margin-top: 50vh;
+  margin-left: 50vw;
+  transform: translate(-50%, -50%);
+  display: inline-block;
+}
+
+#controls {
+  height: 40px;
+  margin: 9px;
+  width: calc(100% - 18px);
+  border: 3px solid #ffffff;
+  border-top-color: #7b7b7b;
+  border-left-color: #7b7b7b;
+  box-sizing: border-box;
+  display: flex;
+  position: relative;
+}
+
+#mines {
+  margin: 3px;
+  height: 28px;
+  width: 45.92px;
+  background-color: #000000;
+  border: 1px solid #ffffff;
+  border-top-color: #7b7b7b;
+  border-left-color: #7b7b7b;
+  box-sizing: border-box;
+  display: flex;
+}
+
+#timer {
+  margin: 3px;
+  height: 28px;
+  width: 46px;
+  background-color: #000000;
+  border: 1px solid #ffffff;
+  border-top-color: #7b7b7b;
+  border-left-color: #7b7b7b;
+  box-sizing: border-box;
+  position: absolute;
+  right: 0;
+  display: flex;
+}
+
+#digit {
+  margin: 1px;
+  height: 24px;
+  width: 13px;
+  background-image: url('digits/d0.svg');
+  background-size: 13px, 24px;
+}
+
+#reset-box {
+  height: 28px;
+  position: absolute;
+  margin: 3px;
+  width: calc(100% - 6px);
+  /* background-color: green; */
+}
+
+#reset {
+  margin: auto;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 1px #7b7b7b;
+  border-bottom-color: #7b7b7b;
+  border-right-color: #7b7b7b;
+  box-sizing: border-box;
+  background-image: url('face.svg');
+  background-size: 15px 15px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#reset:active {
+  border: 1.5px solid #7b7b7b;
+  border-bottom: none;
+  border-right: none;
+  user-select: none;
+}
+
+#board {
+  height: 198px;
+  width: 198px;
+  margin: 9px;
+  border: 3px solid #ffffff;
+  border-top-color: #7b7b7b;
+  border-left-color: #7b7b7b;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#tile {
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+}
+
+#tile.unopened {
+  border: 3px solid #ffffff;
+  border-bottom-color: #7b7b7b;
+  border-right-color: #7b7b7b;
+}
+
+#tile.unopened:active {
+  border: 1.5px solid #7b7b7b;
+  border-bottom: none;
+  border-right: none;
+  user-select: none;
+}
+
+#tile.opened {
+  border: 1.5px solid #7b7b7b;
+  border-bottom: none;
+  border-right: none;
+}
