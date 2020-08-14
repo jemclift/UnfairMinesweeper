@@ -128,3 +128,27 @@ body {
   border-bottom: none;
   border-right: none;
 }
+
+#tile.flagged {
+  border: 3px solid #ffffff;
+  border-bottom-color: #7b7b7b;
+  border-right-color: #7b7b7b;
+  background-image: url('flag.svg');
+  background-size: 15px 15px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#tile.mine, #tile.first-mine {
+  border: 1.5px solid #7b7b7b;
+  border-bottom: none;
+  border-right: none;
+  background-image: url('mine.svg');
+  background-size: 15px 15px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#tile.first-mine {
+  background-color: red;
+}
