@@ -1,31 +1,48 @@
-var board_size = [16,30]; // [y,x]
-var mines = 99;
+var board_size = [29,58]; // [y,x]
+board_size = [9,9]
+var mines = 347;
+mines = 10
+// var large_start = true;
+var first_go = true;
+var board;
+var counter = 0;
+var stop_counter = false;
+var mines_left = mines;
+
+document.onkeyup = function(e) {
+  if (e.which == 32) { newGame() }
+};
+
+var loadedimages = new Array();
+for (i=0; i<10; i++) {
+  loadedimages[i] = new Image();
+  loadedimages[i].src = "digits/d"+i+".svg";
+}
+new_image = new Image()
+new_image.src = "digits/d-.svg"
+loadedimages.push(new_image)
 
 function generateGrid() {
-  let board = new Array(board_size[0]); 
+  board = new Array(board_size[0]); 
   for (var i = 0; i < board_size[0]; i++) {
     board[i] = new Array(board_size[1]);
   }
-  return board;
 }
 
-function buryMines(board) {
-  var new_board = board;
+function buryMines() {
   var mines_to_bury = mines;
 
   while (mines_to_bury > 0) {
     var y = Math.floor(Math.random() * board_size[0]);
     var x = Math.floor(Math.random() * board_size[1]);
-    if (new_board[y][x] != 'x') {
-      new_board[y][x] = 'x';
+    if (board[y][x] != 'x') {
+      board[y][x] = 'x';
       mines_to_bury --;
     }
   }
-
-  return new_board;
 }
 
-function calculateHints(board) {
+function calculateHints() {
   for (y=0; y<board.length; y++) {
     for (x=0; x<board[y].length; x++) {
       var mine_count = 0;
@@ -47,17 +64,15 @@ function calculateHints(board) {
       }
     }
   }
-  return board;
 }
 
 function generateCompleteBoard() {
-  var board = generateGrid();
-  board = buryMines(board);
-  board = calculateHints(board);
-  return board;
+  generateGrid();
+  buryMines();
+  calculateHints();
 }
 
-function drawTiles(board) {
+function drawTiles() {
   var boardElement = document.getElementById("board")
   while (boardElement.firstChild) {
     boardElement.removeChild(boardElement.lastChild);
@@ -65,10 +80,15 @@ function drawTiles(board) {
   for (y=0; y<board_size[0]; y++) {
     for (x=0; x<board_size[1]; x++) {
       var tile = document.createElement("tile");
-      // tile.id = "tile"
       tile.className = "unopened"
-      tile.onclick = function() {digTile(this,board)};
-      tile.addEventListener('contextmenu', function(el) { el.preventDefault(); flagTile(this); return false; }, false);
+      tile.onclick = function() {digTile(this)};
+      tile.addEventListener('contextmenu', function(el) { 
+        el.preventDefault(); 
+        flagTile(this); 
+        mines_left --;
+        updateMineCounter();
+        return false; 
+      }, false);
       tile.row = y;
       tile.column = x;
       tile.id = y+"-"+x
@@ -78,27 +98,44 @@ function drawTiles(board) {
   }
 }
 
-function digTile(tile,board) {
+function digTile(tile) {
+  if (first_go) { startTimer() }
   if (tile.className != "flagged") {
     if (board[tile.row][tile.column] == "0") {
-      uncoverTiles(tile.row, tile.column, board);
+      uncoverTiles(tile.row, tile.column);
     } else {
       tile.className = "opened";
     }
     var text = "";
     if (board[tile.row][tile.column] == "x") {
-      tile.className = "first-mine"
-      gameOver(tile.row,tile.column,board)
+      if (first_go == false) {
+        tile.className = "first-mine"
+        gameOver(tile.row,tile.column)
+      } else {
+        var y = tile.row; var x = tile.column
+        newGame()
+        digTile(document.getElementById(y+"-"+x))
+      }
     } else if (board[tile.row][tile.column] > 0) {
       text = board[tile.row][tile.column]
     }
     tile.innerHTML = text;
     coloriseHint(tile.row,tile.column)
   }
+  first_go = false
+  if (checkWin()) {
+    stop_counter = true
+    for (tile of document.getElementsByTagName("tile")) {
+      if (tile.className != "flagged" && board[tile.row][tile.column] == "x") {
+        tile.className = "flagged";
+      }
+      tile.onclick = null;
+      tile.classList.add("disabled");
+    }
+  }
 }
 
 function coloriseHint(row,column) {
-  console.log("row:"+row+"column"+column)
   var hint = document.getElementById(row+"-"+column)
 
   switch (hint.innerHTML) {
@@ -113,27 +150,27 @@ function coloriseHint(row,column) {
   }
 }
  
-function uncoverTiles(row, column, board) {
+function uncoverTiles(row, column) {
   if (board[row][column] == "0" && document.getElementById(row+"-"+column).className != "opened") {
     document.getElementById(row+"-"+column).className = "opened"
 
-    try { if (board[row-1][column-1] == "0") { uncoverTiles(row-1,column-1,board) } } catch(e) {}
-    try { if (board[row-1][column]   == "0") { uncoverTiles(row-1,column,board)   } } catch (e) {}
-    try { if (board[row-1][column+1] == "0") { uncoverTiles(row-1,column+1,board) } } catch (e) {}
+    try { if (board[row-1][column-1] == "0") { uncoverTiles(row-1,column-1) } } catch(e) {}
+    try { if (board[row-1][column]   == "0") { uncoverTiles(row-1,column)   } } catch (e) {}
+    try { if (board[row-1][column+1] == "0") { uncoverTiles(row-1,column+1) } } catch (e) {}
 
-    try { if (board[row][column-1] == "0") { uncoverTiles(row,column-1,board) } } catch (e) {}
-    try { if (board[row][column+1] == "0") { uncoverTiles(row,column+1,board) } } catch (e) {}
+    try { if (board[row][column-1] == "0") { uncoverTiles(row,column-1) } } catch (e) {}
+    try { if (board[row][column+1] == "0") { uncoverTiles(row,column+1) } } catch (e) {}
 
-    try { if (board[row+1][column-1] == "0") { uncoverTiles(row+1,column-1,board) } } catch (e) {}
-    try { if (board[row+1][column]   == "0") { uncoverTiles(row+1,column,board)   } } catch (e) {}
-    try { if (board[row+1][column+1] == "0") { uncoverTiles(row+1,column+1,board) } } catch (e) {}
+    try { if (board[row+1][column-1] == "0") { uncoverTiles(row+1,column-1) } } catch (e) {}
+    try { if (board[row+1][column]   == "0") { uncoverTiles(row+1,column)   } } catch (e) {}
+    try { if (board[row+1][column+1] == "0") { uncoverTiles(row+1,column+1) } } catch (e) {}
 
-    openAdjacentNumbers(row, column, board)
+    openAdjacentNumbers(row, column)
   }
 }
 
-function openAdjacentNumbers(row, column, board) {
-  function openIfUnopened(row, column, board) {
+function openAdjacentNumbers(row, column) {
+  function openIfUnopened(row, column) {
     var tile = document.getElementById(row+"-"+column)
     if (tile.className == "unopened") {
       tile.className = "opened"
@@ -141,16 +178,16 @@ function openAdjacentNumbers(row, column, board) {
       coloriseHint(row,column)
     }
   }
-  try { if (board[row-1][column-1] < 10) { openIfUnopened(row-1,column-1,board) } } catch(e) {}
-  try { if (board[row-1][column]   < 10) { openIfUnopened(row-1,column,board)   } } catch (e) {}
-  try { if (board[row-1][column+1] < 10) { openIfUnopened(row-1,column+1,board) } } catch (e) {}
+  try { if (board[row-1][column-1] < 10) { openIfUnopened(row-1,column-1) } } catch(e) {}
+  try { if (board[row-1][column]   < 10) { openIfUnopened(row-1,column)   } } catch (e) {}
+  try { if (board[row-1][column+1] < 10) { openIfUnopened(row-1,column+1) } } catch (e) {}
 
-  try { if (board[row][column-1] < 10) { openIfUnopened(row,column-1,board) } } catch (e) {}
-  try { if (board[row][column+1] < 10) { openIfUnopened(row,column+1,board) } } catch (e) {}
+  try { if (board[row][column-1] < 10) { openIfUnopened(row,column-1) } } catch (e) {}
+  try { if (board[row][column+1] < 10) { openIfUnopened(row,column+1) } } catch (e) {}
 
-  try { if (board[row+1][column-1] < 10) { openIfUnopened(row+1,column-1,board) } } catch (e) {}
-  try { if (board[row+1][column] < 10) { openIfUnopened(row+1,column,board)   } } catch (e) {}
-  try { if (board[row+1][column+1] < 10) { openIfUnopened(row+1,column+1,board) } } catch (e) {}
+  try { if (board[row+1][column-1] < 10) { openIfUnopened(row+1,column-1) } } catch (e) {}
+  try { if (board[row+1][column] < 10) { openIfUnopened(row+1,column)   } } catch (e) {}
+  try { if (board[row+1][column+1] < 10) { openIfUnopened(row+1,column+1) } } catch (e) {}
 }
 
 function flagTile(tile) {
@@ -162,11 +199,35 @@ function flagTile(tile) {
 }
 
 function newGame() {
-  var board = generateCompleteBoard();
-  drawTiles(board);
+  first_go = true;
+  stop_counter = false;
+  mines_left = mines;
+  counter = 0;
+  generateCompleteBoard();
+  drawTiles();
+  updateMineCounter();
 }
 
-function gameOver(firstY,firstX,board) {
+function updateMineCounter() {
+  if (mines_left < 1000 && mines_left > -100) {
+    if (mines_left.toString().length == 3) {
+      document.getElementById("mines").childNodes[1].style.backgroundImage = "url('digits/d"+mines_left.toString()[0]+".svg')";
+      document.getElementById("mines").childNodes[3].style.backgroundImage = "url('digits/d"+mines_left.toString()[1]+".svg')";
+      document.getElementById("mines").childNodes[5].style.backgroundImage = "url('digits/d"+mines_left.toString()[2]+".svg')";
+    } else if (mines_left.toString().length == 2) {
+      document.getElementById("mines").childNodes[1].style.backgroundImage = "url('digits/d0.svg')";
+      document.getElementById("mines").childNodes[3].style.backgroundImage = "url('digits/d"+mines_left.toString()[0]+".svg')";
+      document.getElementById("mines").childNodes[5].style.backgroundImage = "url('digits/d"+mines_left.toString()[1]+".svg')";
+    } else {
+      document.getElementById("mines").childNodes[1].style.backgroundImage = "url('digits/d0.svg')";
+      document.getElementById("mines").childNodes[3].style.backgroundImage = "url('digits/d0.svg')";
+      document.getElementById("mines").childNodes[5].style.backgroundImage = "url('digits/d"+mines_left.toString()[0]+".svg')";
+    }
+  }
+}
+
+function gameOver(firstY,firstX) {
+  stop_counter = true
   var tiles = document.getElementsByTagName("tile")
   for (tile of tiles) {
     if (board[tile.row][tile.column] == "x") {
@@ -178,9 +239,36 @@ function gameOver(firstY,firstX,board) {
     }
     tile.onclick = null
     tile.classList.add("disabled")
-    tile.disabled = true
   }
   document.getElementById(firstY+"-"+firstX).classList.add("first-mine")
+}
+
+function startTimer() {
+  if (counter < 1000 && stop_counter == false) {
+    setTimeout( function() {
+      if (counter % 100 == 0) {
+        document.getElementById("timer").childNodes[1].style.backgroundImage = "url('digits/d"+(counter % 1000).toString()[0]+".svg')"; 
+      }
+      if (counter % 10 == 0) {
+        document.getElementById("timer").childNodes[3].style.backgroundImage = "url('digits/d"+(counter % 100).toString()[0]+".svg')";
+      }
+      if (stop_counter == false) {
+        document.getElementById("timer").childNodes[5].style.backgroundImage = "url('digits/d"+(counter % 10)+".svg')";
+      }
+      counter ++;
+      startTimer();
+    }, 1000);
+  }
+}
+
+function checkWin() {
+  var win = true
+  for (tile of document.getElementById("board").childNodes) {
+    if (tile.className != "opened" && board[tile.row][tile.column] != "x") {
+      win = false; break
+    }
+  }
+  return win
 }
 
 newGame();
