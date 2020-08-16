@@ -8,6 +8,7 @@ var board;
 var counter = 0;
 var stop_counter = false;
 var mines_left = mines;
+var timout_counter;
 
 document.onkeyup = function(e) {
   if (e.which == 32) { newGame() }
@@ -199,13 +200,17 @@ function flagTile(tile) {
 }
 
 function newGame() {
+  clearTimeout(timout_counter);
+  document.getElementById("timer").childNodes[1].style.backgroundImage =
+  document.getElementById("timer").childNodes[3].style.backgroundImage =
+  document.getElementById("timer").childNodes[5].style.backgroundImage = "url('digits/d0.svg')"
   first_go = true;
-  stop_counter = false;
   mines_left = mines;
   counter = 0;
   generateCompleteBoard();
   drawTiles();
   updateMineCounter();
+  stop_counter = false;
 }
 
 function updateMineCounter() {
@@ -245,7 +250,7 @@ function gameOver(firstY,firstX) {
 
 function startTimer() {
   if (counter < 1000 && stop_counter == false) {
-    setTimeout( function() {
+    timout_counter = setTimeout( function() {
       if (counter % 100 == 0) {
         document.getElementById("timer").childNodes[1].style.backgroundImage = "url('digits/d"+(counter % 1000).toString()[0]+".svg')"; 
       }
