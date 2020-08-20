@@ -1,8 +1,11 @@
-var board_size = [29,58]; // [y,x]
-board_size = [9,9]
-var mines = 347;
-mines = 10
-// var large_start = true;
+// var board_size = [29,58]; // [y,x]
+// var mines = 347;
+
+var board_size = [9,9],   mines = 10 // Begginer
+// var board_size = [16,16], mines = 40 // Intermediate
+// var board_size = [16,30], mines = 99 // Expert
+
+var large_start = true;
 var first_go = true;
 var board;
 var counter = 0;
@@ -83,13 +86,18 @@ function drawTiles() {
       var tile = document.createElement("tile");
       tile.className = "unopened"
       tile.onclick = function() {digTile(this)};
-      tile.addEventListener('contextmenu', function(el) { 
+      function tileRightClick(el) {
         el.preventDefault(); 
+        if (this.classList.contains("flagged") && this.classList.contains("disabled") == false) {
+          mines_left ++;
+        } else if (this.classList.contains("disabled") == false) {
+          mines_left --;
+        }
         flagTile(this); 
-        mines_left --;
         updateMineCounter();
         return false; 
-      }, false);
+      }
+      tile.addEventListener('contextmenu', tileRightClick, false);
       tile.row = y;
       tile.column = x;
       tile.id = y+"-"+x
@@ -105,7 +113,12 @@ function digTile(tile) {
     if (board[tile.row][tile.column] == "0") {
       uncoverTiles(tile.row, tile.column);
     } else {
-      tile.className = "opened";
+      if (large_start == true && first_go == true) {
+        newGame()
+        digTile(document.getElementById(tile.row+"-"+tile.column))
+      } else {
+        tile.className = "opened";
+      }
     }
     var text = "";
     if (board[tile.row][tile.column] == "x") {
@@ -125,6 +138,9 @@ function digTile(tile) {
   }
   first_go = false
   if (checkWin()) {
+    document.getElementById("mines").childNodes[1].style.backgroundImage =
+    document.getElementById("mines").childNodes[3].style.backgroundImage =
+    document.getElementById("mines").childNodes[5].style.backgroundImage = "url('digits/d0.svg')"
     stop_counter = true
     for (tile of document.getElementsByTagName("tile")) {
       if (tile.className != "flagged" && board[tile.row][tile.column] == "x") {
@@ -243,6 +259,7 @@ function gameOver(firstY,firstX) {
       tile.className = "mine-wrong"
     }
     tile.onclick = null
+    tile.removeEventListener('contextmenu', tileRightClick);
     tile.classList.add("disabled")
   }
   document.getElementById(firstY+"-"+firstX).classList.add("first-mine")
